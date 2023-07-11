@@ -7,13 +7,61 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URI")
+  url      = env("DATABASE_URL_LOCAL")
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum BillStatus {
+  PAID
+  UNPAID
 }
 
 model User {
-  id        String @id @db.VarChar(14)
-  username  String @unique @db.VarChar(50)
-  password  String @db.VarChar(100)
+  id          String      @id @db.VarChar(14)
+  name        String      @unique @db.VarChar(50)
+  password    String      @db.VarChar(100)
+  role        Role        @default(CLIENT)
 
-  @@map("users")
+  units       HousingComplex?
+  bills       Bills[]
+
+  @@map("user")
+}
+
+model HousingComplex {
+  id          String      @id @db.VarChar(14)
+  userId      String      @unique @db.VarChar(14)
+  name        String      @db.VarChar(100)
+  address     String      @db.VarChar(100)
+
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@map("housing_complex")
+}
+
+model BillType {
+  id          String      @id @db.VarChar(14)
+  name        String      @db.VarChar(100)
+  bill        Bills?
+
+  @@map("bill_type")
+}
+
+model Bills {
+  id          String      @id @db.VarChar(14)
+  userId      String      @db.VarChar(14)
+  typeId      String      @unique
+  date        Int         @db.Int
+  total       Float       @db.Float
+  status      BillStatus  @default(UNPAID)    
+
+  user        User        @relation(fields: [userId], references: [id])
+  type        BillType    @relation(fields: [typeId], references: [id])
+
+  @@map("bills")
 }
