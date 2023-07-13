@@ -18,7 +18,7 @@ export const customResponse = ({ statusCode, payload, message }: IResponse) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH",
-        "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+        "Cache-Control": "s-maxage=10, stale-while-revalidate=59",
       },
     }
   );

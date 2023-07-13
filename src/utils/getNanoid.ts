@@ -1,5 +1,5 @@
-const { nanoid } = require("nanoid");
+import { nanoid } from "nanoid";
 
-export const getNanoid = (random: number = 10): void => {
-  return nanoid(random);
+export const getNanoid = (size: number = 10): string => {
+  return nanoid(size);
 };

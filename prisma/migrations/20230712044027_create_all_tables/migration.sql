@@ -3,7 +3,7 @@ CREATE TABLE `user` (
     `id` VARCHAR(14) NOT NULL,
     `name` VARCHAR(50) NOT NULL,
     `password` VARCHAR(100) NOT NULL,
-    `role` ENUM('ADMIN', 'CLIENT') NOT NULL DEFAULT 'CLIENT',
+    `role` ENUM('ROOT', 'ADMIN', 'CLIENT') NOT NULL DEFAULT 'CLIENT',
 
     UNIQUE INDEX `user_name_key`(`name`),
     PRIMARY KEY (`id`)
@@ -32,12 +32,11 @@ CREATE TABLE `bill_type` (
 CREATE TABLE `bills` (
     `id` VARCHAR(14) NOT NULL,
     `userId` VARCHAR(14) NOT NULL,
-    `typeId` VARCHAR(191) NOT NULL,
+    `typeId` VARCHAR(14) NOT NULL,
     `date` INTEGER NOT NULL,
     `total` FLOAT NOT NULL,
     `status` ENUM('PAID', 'UNPAID') NOT NULL DEFAULT 'UNPAID',
 
-    UNIQUE INDEX `bills_typeId_key`(`typeId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

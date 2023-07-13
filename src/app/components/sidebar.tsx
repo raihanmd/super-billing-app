@@ -1,20 +1,24 @@
+"use client";
+
 import React, { ReactNode } from "react";
-import { IconButton, Avatar, Box, CloseButton, Flex, HStack, VStack, Icon, Link, Drawer, DrawerContent, Text, useDisclosure, BoxProps, FlexProps, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Heading } from "@chakra-ui/react";
+import { IconButton, Avatar, Box, CloseButton, Flex, HStack, VStack, Icon, Link, Drawer, DrawerContent, Text, useDisclosure, BoxProps, FlexProps, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Heading, Stack } from "@chakra-ui/react";
 import { FiHome, FiTrendingUp, FiCompass, FiStar, FiSettings, FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
+import { usePathname } from "next/navigation";
 
 import { IconType } from "react-icons/lib";
 import { ReactText } from "react";
 
 interface LinkItemProps {
+  href: string;
   name: string;
   icon: IconType;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "Home", icon: FiHome },
-  { name: "Trending", icon: FiTrendingUp },
-  { name: "Explore", icon: FiCompass },
-  { name: "Favourites", icon: FiStar },
-  { name: "Settings", icon: FiSettings },
+  { href: "/", name: "Home", icon: FiHome },
+  { href: "/trending", name: "Trending", icon: FiTrendingUp },
+  { href: "/explore", name: "Explore", icon: FiCompass },
+  { href: "/fav", name: "Favourites", icon: FiStar },
+  { href: "/setting", name: "Settings", icon: FiSettings },
 ];
 
 export default function Sidebar({ children }: { children: ReactNode }) {
@@ -49,31 +53,39 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </Text>
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
-      {LinkItems.map((link) => (
-        <NavItem key={link.name} icon={link.icon}>
-          {link.name}
-        </NavItem>
-      ))}
+      <Stack spacing={"1"}>
+        {LinkItems.map((link) => (
+          <NavItem key={link.name} icon={link.icon} href={link.href}>
+            {link.name}
+          </NavItem>
+        ))}
+      </Stack>
     </Box>
   );
 };
 
 interface NavItemProps extends FlexProps {
+  href: string;
   icon: IconType;
   children: ReactText;
 }
-const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
+const NavItem = ({ href, icon, children, ...rest }: NavItemProps) => {
+  const pathname = usePathname();
+
   return (
-    <Link href="#" style={{ textDecoration: "none" }} _focus={{ boxShadow: "none" }}>
+    <Link href={href} style={{ textDecoration: "none" }} _focus={{ boxShadow: "none" }}>
       <Flex
+        p={"3"}
+        // mx={"4"}
         align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
+        // borderRadius="lg"
         role="group"
         cursor="pointer"
+        //@ts-ignore
+        bg={pathname.includes(href) ? "blue.400" : "none"}
+        color={pathname.includes(href) ? "white" : "black"}
         _hover={{
-          bg: "cyan.400",
+          bg: "blue.400",
           color: "white",
         }}
         {...rest}

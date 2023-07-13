@@ -12,6 +12,7 @@ datasource db {
 }
 
 enum Role {
+  ROOT
   ADMIN
   CLIENT
 }
@@ -47,7 +48,7 @@ model HousingComplex {
 model BillType {
   id          String      @id @db.VarChar(14)
   name        String      @db.VarChar(100)
-  bill        Bills?
+  bill        Bills[]
 
   @@map("bill_type")
 }
@@ -55,7 +56,7 @@ model BillType {
 model Bills {
   id          String      @id @db.VarChar(14)
   userId      String      @db.VarChar(14)
-  typeId      String      @unique
+  typeId      String      @db.VarChar(14)
   date        Int         @db.Int
   total       Float       @db.Float
   status      BillStatus  @default(UNPAID)    
