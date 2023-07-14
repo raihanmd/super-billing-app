@@ -32,6 +32,7 @@ import { useSession } from "next-auth/react";
 
 import { IconType } from "react-icons/lib";
 import { ReactText } from "react";
+import { User } from "next-auth";
 
 interface LinkItemProps {
   url: string;
@@ -48,6 +49,12 @@ const LinkItems: Array<LinkItemProps> = [
 
 export default function Sidebar({ children }: { children: ReactNode }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect("/api/auth/signin");
+    },
+  });
 
   return (
     <Box minH="100vh" bg={"gray.100"}>
@@ -58,7 +65,7 @@ export default function Sidebar({ children }: { children: ReactNode }) {
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} />
+      <MobileNav onOpen={onOpen} userData={session?.user} />
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -134,16 +141,10 @@ const NavItem = ({ url, icon, children, ...rest }: NavItemProps) => {
 };
 
 interface MobileProps extends FlexProps {
+  userData: any;
   onOpen: () => void;
 }
-const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
-  const { data: session } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect("/api/auth/signin");
-    },
-  });
-
+const MobileNav = ({ userData, onOpen, ...rest }: MobileProps) => {
   return (
     <Flex ml={{ base: 0, md: 60 }} px={{ base: 4, md: 4 }} height="20" alignItems="center" bg={"white"} borderBottomWidth="1px" borderBottomColor={"gray.200"} justifyContent={{ base: "space-between", md: "flex-end" }} {...rest}>
       <IconButton display={{ base: "flex", md: "none" }} onClick={onOpen} variant="outline" aria-label="open menu" icon={<FiMenu />} />
@@ -158,17 +159,23 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
           <Menu>
             <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
               <HStack>
-                <Avatar size={"sm"} name={session?.user.name}>
+                <Avatar size={"sm"} name={userData.name}>
                   <AvatarBadge boxSize="1.25em" bg="green.500" />
                 </Avatar>
-                <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
-                  <Heading fontSize="sm">{session?.user.name}</Heading>
-                  {session?.user.role === "ADMIN" && (
-                    <Heading fontSize="xs" color="gray.600">
-                      {session?.user.role}
-                    </Heading>
-                  )}
-                </VStack>
+                {status === "loading" ? (
+                  <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
+                    <Heading fontSize="sm">Loading..</Heading>
+                  </VStack>
+                ) : (
+                  <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
+                    <Heading fontSize="sm">{userData.name}</Heading>
+                    {userData.role === "ADMIN" && (
+                      <Heading fontSize="xs" color="gray.600">
+                        {userData.role}
+                      </Heading>
+                    )}
+                  </VStack>
+                )}
                 <Box display={{ base: "none", md: "flex" }}>
                   <FiChevronDown />
                 </Box>
