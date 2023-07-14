@@ -1,28 +1,54 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { IconButton, Avatar, Box, CloseButton, Flex, HStack, VStack, Icon, Link, Drawer, DrawerContent, Text, useDisclosure, BoxProps, FlexProps, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Heading, Stack } from "@chakra-ui/react";
+import {
+  IconButton,
+  Avatar,
+  Box,
+  CloseButton,
+  Flex,
+  HStack,
+  VStack,
+  Icon,
+  Drawer,
+  DrawerContent,
+  Text,
+  useDisclosure,
+  BoxProps,
+  FlexProps,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  Heading,
+  Stack,
+  Link,
+  AvatarBadge,
+} from "@chakra-ui/react";
 import { FiHome, FiTrendingUp, FiCompass, FiStar, FiSettings, FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { IconType } from "react-icons/lib";
 import { ReactText } from "react";
 
 interface LinkItemProps {
-  href: string;
+  url: string;
   name: string;
   icon: IconType;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { href: "/", name: "Home", icon: FiHome },
-  { href: "/trending", name: "Trending", icon: FiTrendingUp },
-  { href: "/explore", name: "Explore", icon: FiCompass },
-  { href: "/fav", name: "Favourites", icon: FiStar },
-  { href: "/setting", name: "Settings", icon: FiSettings },
+  { url: "/", name: "Home", icon: FiHome },
+  { url: "/trending", name: "Trending", icon: FiTrendingUp },
+  { url: "/explore", name: "Explore", icon: FiCompass },
+  { url: "/fav", name: "Favourites", icon: FiStar },
+  { url: "/setting", name: "Settings", icon: FiSettings },
 ];
 
 export default function Sidebar({ children }: { children: ReactNode }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <Box minH="100vh" bg={"gray.100"}>
       <SidebarContent onClose={() => onClose} display={{ base: "none", md: "block" }} />
@@ -55,7 +81,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       </Flex>
       <Stack spacing={"1"}>
         {LinkItems.map((link) => (
-          <NavItem key={link.name} icon={link.icon} href={link.href}>
+          <NavItem key={link.name} icon={link.icon} url={link.url}>
             {link.name}
           </NavItem>
         ))}
@@ -65,15 +91,16 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 };
 
 interface NavItemProps extends FlexProps {
-  href: string;
+  url: string;
   icon: IconType;
   children: ReactText;
 }
-const NavItem = ({ href, icon, children, ...rest }: NavItemProps) => {
+const NavItem = ({ url, icon, children, ...rest }: NavItemProps) => {
   const pathname = usePathname();
 
   return (
-    <Link href={href} style={{ textDecoration: "none" }} _focus={{ boxShadow: "none" }}>
+    //@ts-ignore
+    <Link href={url} style={{ textDecoration: "none" }}>
       <Flex
         p={"3"}
         // mx={"4"}
@@ -82,8 +109,8 @@ const NavItem = ({ href, icon, children, ...rest }: NavItemProps) => {
         role="group"
         cursor="pointer"
         //@ts-ignore
-        bg={pathname.includes(href) ? "blue.400" : "none"}
-        color={pathname.includes(href) ? "white" : "black"}
+        bg={pathname.includes(url) ? "blue.400" : "none"}
+        color={pathname.includes(url) ? "white" : "black"}
         _hover={{
           bg: "blue.400",
           color: "white",
@@ -110,6 +137,13 @@ interface MobileProps extends FlexProps {
   onOpen: () => void;
 }
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect("/api/auth/signin");
+    },
+  });
+
   return (
     <Flex ml={{ base: 0, md: 60 }} px={{ base: 4, md: 4 }} height="20" alignItems="center" bg={"white"} borderBottomWidth="1px" borderBottomColor={"gray.200"} justifyContent={{ base: "space-between", md: "flex-end" }} {...rest}>
       <IconButton display={{ base: "flex", md: "none" }} onClick={onOpen} variant="outline" aria-label="open menu" icon={<FiMenu />} />
@@ -124,12 +158,16 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
           <Menu>
             <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
               <HStack>
-                <Avatar size={"sm"} src={"https://images.unsplash.com/photo-1619946794135-5bc917a27793?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9"} />
-                <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start" spacing="1px" ml="2">
-                  <Heading fontSize="sm">Justina Clark</Heading>
-                  <Heading fontSize="xs" color="gray.600">
-                    Admin
-                  </Heading>
+                <Avatar size={"sm"} name={session?.user.name}>
+                  <AvatarBadge boxSize="1.25em" bg="green.500" />
+                </Avatar>
+                <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
+                  <Heading fontSize="sm">{session?.user.name}</Heading>
+                  {session?.user.role === "ADMIN" && (
+                    <Heading fontSize="xs" color="gray.600">
+                      {session?.user.role}
+                    </Heading>
+                  )}
                 </VStack>
                 <Box display={{ base: "none", md: "flex" }}>
                   <FiChevronDown />
@@ -141,7 +179,9 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               <MenuItem>Settings</MenuItem>
               <MenuItem>Billing</MenuItem>
               <MenuDivider />
-              <MenuItem>Sign out</MenuItem>
+              <MenuItem as={Link} href={"/api/auth/signout"}>
+                Sign out
+              </MenuItem>
             </MenuList>
           </Menu>
         </Flex>

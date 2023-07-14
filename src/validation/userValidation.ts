@@ -14,14 +14,6 @@ export const registerUserValidation = Joi.object({
 });
 
 export const loginUserValidation = Joi.object({
-  userName: Joi.string()
-    .max(50)
-    .required()
-    .custom((value, helpers) => {
-      if (value !== value.toLowerCase()) {
-        return helpers.error("any.invalid");
-      }
-      return value;
-    }),
+  userName: Joi.string().max(50).required().lowercase(),
   userPassword: Joi.string().max(100).required(),
 });
