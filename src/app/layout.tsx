@@ -4,7 +4,7 @@ import "@fontsource/fira-code";
 import type { Metadata } from "next";
 
 import { Providers } from "./providers";
-import AuthCheck from "./components/authCheck";
+import AuthCheck from "./authCheck";
 import Sidebar from "./components/sidebar";
 
 export const metadata: Metadata = {

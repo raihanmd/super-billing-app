@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
@@ -23,46 +23,74 @@ enum BillStatus {
 }
 
 model User {
-  id       String @id @db.VarChar(14)
-  name     String @unique @db.VarChar(50)
-  password String @db.VarChar(100)
-  role     Role   @default(CLIENT)
+  id          String  @id @db.VarChar(14)
+  name        String  @unique @db.VarChar(50)
+  password    String  @db.VarChar(100)
+  role        Role    @default(CLIENT)
+  phoneNumber String? @db.VarChar(20)
 
-  units HousingComplex?
   bills Bills[]
+  house House?
 
   @@map("user")
 }
 
 model HousingComplex {
   id      String @id @db.VarChar(14)
-  userId  String @unique @db.VarChar(14)
   name    String @db.VarChar(100)
-  address String @db.VarChar(100)
+  kelurahan String @db.VarChar(100)
+  kecamatan String @db.VarChar(100)
 
-  user User @relation(fields: [userId], references: [id])
+  house House[]
 
   @@map("housing_complex")
 }
 
-model BillType {
-  id   String  @id @db.VarChar(14)
-  name String  @db.VarChar(100)
-  bill Bills[]
+model House {
+  id               String @id @db.VarChar(14)
+  userId           String @unique @db.VarChar(14)
+  housingComplexId String @db.VarChar(14)
+  houseNumber      String @db.VarChar(20)
 
-  @@map("bill_type")
+  housingComplex HousingComplex @relation(fields: [housingComplexId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+
+  @@map("house")
 }
 
 model Bills {
-  id     String     @id @db.VarChar(14)
-  userId String     @db.VarChar(14)
-  typeId String     @db.VarChar(14)
-  date   Int        @db.Int
-  total  Float      @db.Float
-  status BillStatus @default(UNPAID)
+  id        String     @id @db.VarChar(14)
+  userId    String     @db.VarChar(14)
+  serviceId String     @db.VarChar(14)
+  date      Int        @db.Int
+  dueDate   Int        @db.Int
+  status    BillStatus @default(UNPAID)
 
-  user User     @relation(fields: [userId], references: [id])
-  type BillType @relation(fields: [typeId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
 
   @@map("bills")
+}
+
+model Service {
+  id            String  @id @db.VarChar(14)
+  serviceTypeId Int
+  name          String  @db.VarChar(100)
+  description   String?
+  price         Float   @db.Float
+
+  TypeId ServiceType @relation(fields: [serviceTypeId], references: [id])
+
+  bill Bills[]
+
+  @@map("service")
+}
+
+model ServiceType {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(50)
+
+  service Service[]
+
+  @@map("service_type")
 }

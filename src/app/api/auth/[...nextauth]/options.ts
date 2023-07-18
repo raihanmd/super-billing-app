@@ -5,7 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: "credentials",
       credentials: {
         username: {
           label: "Username:",
@@ -36,4 +36,10 @@ export const options: NextAuthOptions = {
       return session;
     },
   },
+  theme: {
+    colorScheme: "light",
+  },
+  // pages: {
+  //   signIn: "/signin",
+  // },
 };

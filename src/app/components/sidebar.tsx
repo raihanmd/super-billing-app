@@ -26,13 +26,12 @@ import {
   Link,
   AvatarBadge,
 } from "@chakra-ui/react";
-import { FiHome, FiTrendingUp, FiCompass, FiStar, FiSettings, FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
-import { redirect, usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { FiHome, FiMenu, FiBell, FiChevronDown, FiTool } from "react-icons/fi";
+import { usePathname } from "next/navigation";
 
 import { IconType } from "react-icons/lib";
 import { ReactText } from "react";
-import { User } from "next-auth";
+import { useUserContext } from "@/context/userContext";
 
 interface LinkItemProps {
   url: string;
@@ -41,20 +40,13 @@ interface LinkItemProps {
 }
 const LinkItems: Array<LinkItemProps> = [
   { url: "/", name: "Home", icon: FiHome },
-  { url: "/trending", name: "Trending", icon: FiTrendingUp },
-  { url: "/explore", name: "Explore", icon: FiCompass },
-  { url: "/fav", name: "Favourites", icon: FiStar },
-  { url: "/setting", name: "Settings", icon: FiSettings },
+  { url: "/services", name: "Services", icon: FiTool },
 ];
 
 export default function Sidebar({ children }: { children: ReactNode }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect("/api/auth/signin");
-    },
-  });
+
+  const user = useUserContext();
 
   return (
     <Box minH="100vh" bg={"gray.100"}>
@@ -65,7 +57,7 @@ export default function Sidebar({ children }: { children: ReactNode }) {
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} userData={session?.user} />
+      <MobileNav onOpen={onOpen} userData={user} />
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -159,23 +151,17 @@ const MobileNav = ({ userData, onOpen, ...rest }: MobileProps) => {
           <Menu>
             <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
               <HStack>
-                <Avatar size={"sm"} name={userData.name}>
+                <Avatar size={"sm"} name={userData?.name}>
                   <AvatarBadge boxSize="1.25em" bg="green.500" />
                 </Avatar>
-                {status === "loading" ? (
-                  <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
-                    <Heading fontSize="sm">Loading..</Heading>
-                  </VStack>
-                ) : (
-                  <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
-                    <Heading fontSize="sm">{userData.name}</Heading>
-                    {userData.role === "ADMIN" && (
-                      <Heading fontSize="xs" color="gray.600">
-                        {userData.role}
-                      </Heading>
-                    )}
-                  </VStack>
-                )}
+                <VStack display={{ base: "none", md: "flex" }} alignItems="flex-start">
+                  <Heading fontSize="sm">{userData?.name}</Heading>
+                  {userData.role === "ADMIN" && (
+                    <Heading fontSize="xs" color="gray.600">
+                      {userData?.role}
+                    </Heading>
+                  )}
+                </VStack>
                 <Box display={{ base: "none", md: "flex" }}>
                   <FiChevronDown />
                 </Box>
