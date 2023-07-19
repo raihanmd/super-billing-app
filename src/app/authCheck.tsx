@@ -1,12 +1,15 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
 
-import { options } from "./api/auth/[...nextauth]/options";
 import { UserProvider } from "@/context/userContext";
+import RootLoading from "./loading";
 
-export default async function AuthCheck({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(options);
+export default function AuthCheck({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
 
+  if (status === "loading") {
+    return <RootLoading />;
+  }
   if (!session) {
     redirect("/api/auth/signin");
   }

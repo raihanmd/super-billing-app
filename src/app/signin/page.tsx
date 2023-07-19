@@ -3,15 +3,27 @@
 import { Flex, Box, FormControl, FormLabel, Input, Stack, Link, Button, Heading, Text, useColorModeValue, useToast, InputGroup, InputRightElement } from "@chakra-ui/react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useRef, useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+
+import RootLoading from "../loading";
 
 export default function login() {
+  const { data: session, status } = useSession();
   const nameRef = useRef<any>(null);
   const passwordRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const toast = useToast();
+
+  if (status === "loading") {
+    return <RootLoading />;
+  }
+
+  if (session) {
+    redirect("/");
+  }
 
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +88,7 @@ export default function login() {
               <Stack spacing={10}>
                 <Button
                   isLoading={isLoading ? true : false}
-                  loadingText="Submitting"
+                  loadingText="Submitting..."
                   type={"submit"}
                   bg={"blue.400"}
                   color={"white"}
