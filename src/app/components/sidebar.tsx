@@ -56,7 +56,6 @@ export default function Sidebar({ children }: { children: ReactNode }) {
           <SidebarContent onClose={onClose} />
         </DrawerContent>
       </Drawer>
-      {/* mobilenav */}
       <MobileNav onOpen={onOpen} userData={user} />
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}

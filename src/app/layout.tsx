@@ -4,8 +4,6 @@ import "@fontsource/fira-code";
 import type { Metadata } from "next";
 
 import { Providers } from "./providers";
-import AuthCheck from "./authCheck";
-import Sidebar from "./components/sidebar";
 
 export const metadata: Metadata = {
   title: "Super - Billing | App",
@@ -16,11 +14,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
-        <Providers>
-          <AuthCheck>
-            <Sidebar>{children}</Sidebar>
-          </AuthCheck>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { Flex, Box, FormControl, FormLabel, Input, Stack, Link, Button, Heading, Text, useColorModeValue, useToast } from "@chakra-ui/react";
+import { Flex, Box, FormControl, FormLabel, Input, Stack, Link, Button, Heading, Text, useColorModeValue, useToast, InputGroup, InputRightElement } from "@chakra-ui/react";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 
@@ -8,32 +9,41 @@ export default function login() {
   const nameRef = useRef<any>(null);
   const passwordRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const toast = useToast();
 
-  const onSignIn = async () => {
-    setIsLoading(true);
-    signIn("credentials", {
-      username: nameRef.current?.value,
-      password: passwordRef.current?.value,
-      redirect: true,
-      callbackUrl: "/",
-    })
-      .then(() => {
-        setIsLoading(false);
-        toast({
-          title: "Sign in success.",
-          description: "Welcome to dashboard!",
-          status: "success",
-          position: "top-right",
-          isClosable: true,
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-        setIsLoading(false);
-        toast({ title: "Sign in failed.", description: "Username or Password incorrect, Please try again.", status: "error", position: "top-right", isClosable: true });
+  const onSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      const result = await signIn("Credentials", {
+        username: nameRef.current?.value,
+        password: passwordRef.current?.value,
+        redirect: true,
+        callback: "/",
       });
+      if (result?.error) {
+        throw new Error(result?.error);
+      }
+      toast({
+        title: "Sign in success.",
+        description: "Welcome to dashboard!",
+        status: "success",
+        position: "top-right",
+        isClosable: true,
+      });
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Sign in failed.",
+        description: "Username or password incorrect.",
+        status: "error",
+        position: "top-right",
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -46,19 +56,25 @@ export default function login() {
           </Text>
         </Stack>
         <Box rounded={"lg"} bg={useColorModeValue("white", "gray.700")} boxShadow={"lg"} p={8}>
-          <form onSubmit={() => onSignIn()}>
+          <form onSubmit={onSignIn}>
             <Stack spacing={4}>
-              <FormControl id="username">
+              <FormControl id="username" isRequired>
                 <FormLabel>Username</FormLabel>
                 <Input ref={nameRef} type="text" placeholder="Your cool username" />
               </FormControl>
-              <FormControl id="password">
+              <FormControl id="password" isRequired>
                 <FormLabel>Password</FormLabel>
-                <Input ref={passwordRef} type="password" placeholder="Your secret password" />
+                <InputGroup>
+                  <Input type={showPassword ? "text" : "password"} ref={passwordRef} placeholder="Your secret password" />
+                  <InputRightElement h={"full"}>
+                    <Button p={"0"} variant={"ghost"} onClick={() => setShowPassword((showPassword) => !showPassword)}>
+                      {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
               </FormControl>
               <Stack spacing={10}>
                 <Button
-                  //@ts-ignore
                   isLoading={isLoading ? true : false}
                   loadingText="Submitting"
                   type={"submit"}
